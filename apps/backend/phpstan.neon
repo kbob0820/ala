@@ -1,0 +1,7 @@
+parameters:
+    level: 6
+    paths:
+        - app
+    excludePaths:
+        analyse:
+            - app/Repositories/Eloquent/LoanRepository.php

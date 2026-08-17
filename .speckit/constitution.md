@@ -1,0 +1,217 @@
+# Ajang Loan System Constitution
+
+## Mission
+
+Build a secure, maintainable, cross-platform loan management system that serves lenders across Web (Responsive), Android, and iOS. Every financial transaction must be auditable, every calculation reproducible, and every workflow governed by clearly defined business rules.
+
+---
+
+## Core Principles
+
+### I. API-First Architecture
+
+All business logic is exposed exclusively through the REST API. No backend logic shall exist outside the API layer. The API is the single source of truth for all platforms (Web, Android, iOS).
+
+- RESTful endpoints with consistent JSON envelope: `{ success: boolean, data: T, error: string|null }`
+- JWT-based authentication via Laravel Sanctum (SPA tokens for web, API tokens for mobile)
+- All endpoints requiring authentication use the `auth:sanctum` middleware
+- Rate limiting: 60 requests/minute for auth endpoints, configurable for others
+- CORS configured for all registered client origins
+
+### II. Clean Architecture (NON-NEGOTIABLE)
+
+Code is organized into distinct layers with strict dependency direction:
+
+```
+Controllers → Form Requests → Services → Repositories → Models
+```
+
+- **Controllers (Http layer)**: Thin — only route binding, request dispatch, and response formatting. No business logic.
+- **Form Requests**: All input validation lives here, not in controllers. One validator per endpoint.
+- **Services**: All business rules, calculations, and workflows. Stateless and independently testable.
+- **Repositories**: Database access abstraction. Models are never queried directly from services or controllers.
+- **Models**: Eloquent models with relationships, casts, and scopes only. No business logic beyond accessors/mutators.
+
+Every layer depends only on the layer below it. No upward or circular dependencies.
+
+### III. Test-First (NON-NEGOTIABLE)
+
+Tests are written before implementation. The Red-Green-Refactor cycle is enforced for all features.
+
+- **Unit tests** (Pest 3.x): Services, calculators, and pure business logic
+- **Feature tests** (Pest 3.x): API endpoints, middleware, authentication, authorization
+- **Integration tests** (Pest 3.x): Cross-service workflows (loan creation → payment → completion)
+- **Frontend tests** (Vitest): Component rendering, hooks, service mocks
+- Minimum 80% code coverage enforced by CI pipeline
+- Financial calculations (interest, net proceeds, late fees) must have exhaustive edge-case tests
+- All money values use `decimal(12,2)` or equivalent precision; never use floats for currency
+
+### IV. Security by Design
+
+Security is built into every layer, not bolted on.
+
+- **RBAC**: Role-Based Access Control with seven roles: Super Admin, Loan Officer, Cashier, Collector, Finance, Auditor, Borrower
+- **JWT via Sanctum**: Token issuance, refresh, revocation; API tokens scoped by role permissions
+- **Input validation**: Form Request classes on every endpoint; all input sanitized before reaching any service
+- **CSRF protection**: Sanctum SPA authentication for web frontend
+- **HTTPS only**: Staging and production environments enforce TLS
+- **Password hashing**: Bcrypt via Laravel's `Hash` facade
+- **Sensitive data**: Never logged; masked in audit trails (e.g., GCash references shown as `****1234`)
+- **Secrets**: Never committed; `.env` excluded from version control; use encrypted vaults for production
+
+### V. Financial Auditability
+
+Every peso must be traceable from origination to final settlement.
+
+- **Audit trail**: All state-changing operations logged with: actor, action, entity, old state, new state, timestamp, IP
+- **Immutable records**: Loan applications, approvals, releases, payments, and refunds are append-only; no record is ever deleted — soft deletes with `SoftDeletes` trait
+- **Reconciliation**: Financial reports must be reproducible from raw audit log data
+- **Proof of payment**: Every payment requires a screenshot upload; the file hash is stored for tamper detection
+- **Sequential transaction IDs**: All financial transactions receive a sequential, human-readable reference number
+
+### VI. Mobile-First UX
+
+The user experience is designed for mobile first, then scaled to desktop.
+
+- Flutter for Android and iOS native applications
+- Responsive Web (React 19 + Bootstrap 5.3) adapts to all viewports
+- Offline-tolerant: Mobile apps queue actions when connectivity is lost and sync when restored
+- Touch-optimized: Minimum 44×44pt touch targets; swipe gestures for common actions
+- Less than 2-second response time for all API endpoints (p95)
+
+### VII. Business Rule Enforcement
+
+The system must enforce the following rules at the service layer, never in UI alone:
+
+| Rule | Implementation |
+|------|---------------|
+| Gross Loan less 10% = Net Proceeds | `LoanCalculatorService` — computed server-side, not overridable |
+| Maximum term: 5 months | Validated in `StoreLoanRequest` and `LoanCalculatorService` |
+| Payment: twice monthly | `LoanInstallment` schedules generated by `LoanCalculatorService`; 2 installments/month |
+| Late charge: P500/month after due date | `LateFee` model; auto-applied by scheduled job; included in amortization recalculation |
+| Payment proof required | `proof` field mandatory on `Payment`; PNG/JPG/PDF only; max 10MB |
+| Reloan: deduct existing balance from net proceeds | `LoanCalculatorService` checks active loans for the borrower; net proceeds = new loan net - existing balance |
+| Refund: overpayment returned | Request → Approval workflow → Disbursement record; audit logged |
+
+### VIII. Notification Standards
+
+Timely, multi-channel notifications for critical events.
+
+- **In-app**: Real-time via Laravel Broadcasting + WebSockets
+- **Email**: Transactional emails via Laravel Notifications
+- **SMS**: Gateway integration for payment due reminders and overdue alerts
+- Events triggering notifications: loan approved, payment due (3 days before), payment posted, overdue (1 day after due), refund approved, reloan approved
+
+---
+
+## Technology Stack
+
+| Layer | Technology | Version |
+|-------|-----------|---------|
+| Backend Framework | Laravel | 12.x |
+| Language | PHP | 8.4 |
+| Database | MySQL | 8.x |
+| Cache / Queue | Redis | 7.x |
+| Auth | Laravel Sanctum (JWT) | 4.x |
+| Testing (Backend) | Pest | 3.x |
+| Static Analysis | PHPStan | Level 6 |
+| Code Style | Pint (PSR-12) | — |
+| Frontend Web | React + TypeScript + Vite | 19.x / 6.x |
+| Routing | React Router | 7.x |
+| UI Framework | Bootstrap | 5.3 |
+| Testing (Frontend) | Vitest | 4.x |
+| Linting | ESLint (flat config) + Oxlint | 10.x |
+| Mobile | Flutter | 3.x |
+| Containerization | Docker + Laravel Sail | — |
+| Web Server | Nginx | — |
+
+---
+
+## Development Workflow
+
+### Feature Lifecycle
+
+1. **Specification**: Feature spec written in `specs/` following Spec Kit template
+2. **Plan**: Implementation plan with task breakdown
+3. **Branch**: `feature/NNN-short-description` (e.g., `feature/002-payment-module`)
+4. **Tests**: Write tests first; confirm they fail
+5. **Implement**: Build feature to pass tests
+6. **Review**: Pull request with passing CI (tests, lint, static analysis)
+7. **Merge**: Squash-merge to `main`; delete feature branch
+
+### Quality Gates (CI Pipeline)
+
+All must pass before merge:
+
+- `php artisan test` — All Pest tests passing
+- `./vendor/bin/phpstan analyse` — Level 6, zero errors
+- `./vendor/bin/pint --test` — PSR-12 compliance
+- `npm test` — All Vitest tests passing (frontend)
+- `npm run lint` — ESLint flat config passing (frontend)
+- `npm run typecheck` — TypeScript strict mode, zero errors
+
+### Code Review Standards
+
+- At least one approving review from a team member
+- Reviewer verifies: tests exist and are meaningful, business rules enforced in service layer, audit log entries generated, no secrets in code, no floats for currency
+- Financial calculation changes require a second reviewer from Finance or Senior Developer role
+
+### Environment Strategy
+
+| Environment | Purpose | Branch |
+|-------------|---------|--------|
+| Local | Development (Docker/Sail) | feature branches |
+| Staging | Integration testing, UAT | `main` |
+| Production | Live deployment | `main` (tagged releases) |
+
+---
+
+## Payment Methods
+
+The system supports the following payment channels:
+
+| Method | Description |
+|--------|-------------|
+| Cash | Physical cash payment recorded by Cashier |
+| GCash | E-wallet transfer with screenshot proof |
+| BPI | Bank transfer via BPI with screenshot proof |
+| BDO | Bank transfer via BDO with screenshot proof |
+| Other Banks | Bank transfer via other banks with screenshot proof |
+
+All non-cash payments require a proof of payment screenshot (PNG/JPG/PDF, max 10MB).
+
+---
+
+## Governance
+
+### Constitution Authority
+
+This constitution is the highest authority for the Ajang Loan System project. All code, configurations, workflows, and practices must comply with it. When conflicts arise between the constitution and any other document, the constitution takes precedence.
+
+### Amendment Process
+
+1. Propose amendment with rationale and impact analysis in writing
+2. Review and discussion period (minimum 48 hours)
+3. Approval required from Project Lead or designated architect
+4. All amendments documented in version history below
+5. Migration plan required if amendment affects existing code or workflows
+
+### Compliance Verification
+
+- All pull requests must verify compliance with Core Principles
+- Complexity and deviations from Clean Architecture must be explicitly justified in PR description
+- Quarterly architecture review to assess technical debt and constitution adherence
+- Use `AGENTS.md` and `.opencode/` for AI-assisted development guidance
+
+### Non-Negotiable Principles
+
+Principles marked (NON-NEGOTIABLE) cannot be waived, relaxed, or bypassed under any circumstances:
+
+- **II. Clean Architecture** — every layer boundary must be respected
+- **III. Test-First** — no implementation without preceding tests
+- **V. Financial Auditability** — every financial event must be logged and traceable
+- Currency must be stored as `decimal`, never `float`
+
+---
+
+**Version**: 1.0.0 | **Ratified**: 2026-08-04 | **Last Amended**: 2026-08-04
