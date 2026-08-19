@@ -396,18 +396,18 @@ export function LoanForm({
                 />
               </div>
 
-              <div className="alert alert-info mb-0">
-                <div className="d-flex justify-content-between">
-                  <span className="fw-medium">Actual Release:</span>
-                  <span className="fw-bold">{formatCurrency(actualRelease)}</span>
+              <div className="border-top pt-3 d-flex justify-content-between align-items-center">
+                <div>
+                  <div className="fw-medium">Actual Release</div>
+                  <small className="text-muted">
+                    {oldBal > 0
+                      ? 'Net Proceeds − Charges − Old Balance'
+                      : chg > 0
+                        ? 'Net Proceeds − Charges'
+                        : 'Net Proceeds (no deductions)'}
+                  </small>
                 </div>
-                <small className="text-muted">
-                  {oldBal > 0
-                    ? 'Net Proceeds − Charges − Old Balance'
-                    : chg > 0
-                      ? 'Net Proceeds − Charges'
-                      : 'Net Proceeds (no deductions)'}
-                </small>
+                <span className="fw-bold text-nowrap">{formatCurrency(actualRelease)}</span>
               </div>
             </div>
           </div>

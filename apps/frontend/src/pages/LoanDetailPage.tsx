@@ -562,12 +562,6 @@ export function LoanDetailPage() {
     setShowConfirmModal(true);
   }
 
-  const canEditReleaseSources =
-    user?.role?.slug === 'administrator' || user?.role?.slug === 'approver';
-
-  const canEditPayments =
-    user?.role?.slug === 'administrator' || user?.role?.slug === 'approver';
-
   if (loading) {
     return (
       <div className="d-flex justify-content-center py-5">
@@ -586,11 +580,19 @@ export function LoanDetailPage() {
     return <div className="alert alert-warning">Loan not found</div>;
   }
 
+  const isSettledByReloan = loan.loan_status === 'settled_by_reloan';
+
+  const canEditReleaseSources =
+    (user?.role?.slug === 'administrator' || user?.role?.slug === 'approver') && !isSettledByReloan;
+
+  const canEditPayments =
+    (user?.role?.slug === 'administrator' || user?.role?.slug === 'approver') && !isSettledByReloan;
+
   const canRecordPayment =
     loan.application_status !== 'cancelled' &&
     loan.loan_status !== 'cancelled' &&
     loan.loan_status !== 'fully_paid' &&
-    loan.loan_status !== 'settled_by_reloan';
+    !isSettledByReloan;
 
   const canEdit = loan.loan_status === 'waiting_for_release';
   const hasReleaseSources =
@@ -605,6 +607,8 @@ export function LoanDetailPage() {
 
   const originalNetProceeds = loan.amount - loan.total_interest;
   const isReleased = ['active', 'past_due', 'delinquent', 'released', 'fully_paid', 'settled_by_reloan'].includes(loan.loan_status ?? '');
+  const isReloanWithSettlement = loan.loan_type === 'reloan' && (loan.old_balance_settlement ?? 0) > 0;
+  const modifiedNetProceeds = Math.max(0, (loan.net_proceeds ?? 0) - (loan.old_balance_settlement ?? 0) - (loan.charges ?? 0));
 
   const showApprove =
     ['submitted', 'under_review', 'pending_documents'].includes(
@@ -645,9 +649,9 @@ export function LoanDetailPage() {
             <StatusBadge status={loan.loan_status ?? loan.application_status} />
           </h1>
           {borrowerName && (
-            <div style={{ marginTop: '0.375rem', fontSize: 'var(--ala-text-sm)', color: 'var(--ala-gray-600)' }}>
+            <div style={{ marginTop: '0.375rem', fontSize: 'var(--ala-text-5xl)', fontWeight: 700, color: 'var(--ala-gray-900)' }}>
               <i className="fa-solid fa-user me-1" />
-              <Link to={`/clients/${loan.client_id}`} className="fw-medium">
+              <Link to={`/clients/${loan.client_id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
                 {borrowerName}
               </Link>
             </div>
@@ -730,6 +734,13 @@ export function LoanDetailPage() {
               <div className="ala-summary-value" style={{ color: 'var(--ala-blue-700)' }}>{formatCurrency(loan.net_proceeds)}</div>
             </div>
           </>
+        ) : isReloanWithSettlement ? (
+          <div className="ala-summary-item">
+            <div className="ala-summary-label">Modified Net Proceeds</div>
+            <div className="ala-summary-value" style={{ color: modifiedNetProceeds > 0 ? 'var(--ala-warning-600)' : 'var(--ala-danger-600)' }}>
+              {formatCurrency(modifiedNetProceeds)}
+            </div>
+          </div>
         ) : (
           <div className="ala-summary-item">
             <div className="ala-summary-label">Net Proceeds</div>
@@ -804,6 +815,7 @@ export function LoanDetailPage() {
       )}
 
       {activeTab === 'details' && (
+        <>
         <div className="ala-card">
           <div style={{ padding: 'var(--ala-space-5)' }}>
             <div className="row">
@@ -933,6 +945,50 @@ export function LoanDetailPage() {
             </div>
           </div>
         </div>
+
+        {isReloanWithSettlement && !isReleased && (
+          <div className="ala-card mt-4">
+            <div className="ala-card-header">
+              <i className="fa-solid fa-calculator me-2" />
+              Net Process — Modified Net Proceeds
+            </div>
+            <div className="table-responsive">
+              <table className="table table-sm mb-0">
+                <tbody>
+                  <tr>
+                    <td className="ps-3">Net Proceeds</td>
+                    <td className="text-end pe-3">{formatCurrency(loan.net_proceeds)}</td>
+                  </tr>
+                  {loan.old_balance_settlement > 0 && (
+                    <tr>
+                      <td className="ps-3 text-warning">Less: Old Balance Settlement</td>
+                      <td className="text-end pe-3 text-warning">−{formatCurrency(loan.old_balance_settlement)}</td>
+                    </tr>
+                  )}
+                  {loan.charges > 0 && (
+                    <tr>
+                      <td className="ps-3 text-warning">Less: Charges</td>
+                      <td className="text-end pe-3 text-warning">−{formatCurrency(loan.charges)}</td>
+                    </tr>
+                  )}
+                  <tr className="border-top">
+                    <td className="ps-3 fw-bold">Modified Net Proceeds</td>
+                    <td className="text-end pe-3 fw-bold" style={{ color: modifiedNetProceeds > 0 ? 'var(--ala-primary-600)' : 'var(--ala-danger-600)' }}>
+                      {formatCurrency(modifiedNetProceeds)}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            {modifiedNetProceeds <= 0 && (
+              <div className="card-footer bg-danger-subtle text-danger" style={{ fontSize: 'var(--ala-text-sm)' }}>
+                <i className="fa-solid fa-triangle-exclamation me-2" />
+                The old balance exceeds the net proceeds. No cash will be released to the borrower — this reloan only settles the existing loan balance.
+              </div>
+            )}
+          </div>
+        )}
+        </>
       )}
 
       {loan.parent_loan_id && activeTab === 'details' && (

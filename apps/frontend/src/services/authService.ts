@@ -3,7 +3,11 @@ import type { ApiEnvelope, AuthResponse, User } from '@/types';
 
 export async function login(email: string, password: string): Promise<AuthResponse> {
   const res = await api.post<ApiEnvelope<AuthResponse>>('/login', { email, password });
-  return res.data.data;
+  const data = res.data.data;
+  if (!data?.token || !data?.user) {
+    throw new Error('Server returned an unexpected response. Please try again.');
+  }
+  return data;
 }
 
 export async function register(
@@ -18,7 +22,11 @@ export async function register(
     password,
     password_confirmation,
   });
-  return res.data.data;
+  const data = res.data.data;
+  if (!data?.token || !data?.user) {
+    throw new Error('Server returned an unexpected response. Please try again.');
+  }
+  return data;
 }
 
 export async function logout(): Promise<void> {

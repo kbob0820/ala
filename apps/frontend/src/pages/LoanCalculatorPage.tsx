@@ -36,7 +36,7 @@ export default function LoanCalculatorPage() {
   const [mode, setMode] = useState<'new_loan' | 'reloan'>(isReloan ? 'reloan' : 'new_loan');
   const [calculationType, setCalculationType] = useState<'gross_amount' | 'monthly_installment' | 'net_proceeds'>('gross_amount');
   const [amount, setAmount] = useState('');
-  const [termUnit, setTermUnit] = useState<'months' | 'installments'>('installments');
+  const [termUnit, setTermUnit] = useState<'months' | 'installments'>('months');
   const [months, setMonths] = useState('2');
   const [termInstallments, setTermInstallments] = useState('4');
   const [interestRate, setInterestRate] = useState(DEFAULT_INTEREST_RATE);

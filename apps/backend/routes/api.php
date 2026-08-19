@@ -1,4 +1,4 @@
-roejcts<?php
+<?php
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ChargeController;

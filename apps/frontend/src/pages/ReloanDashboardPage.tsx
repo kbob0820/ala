@@ -18,8 +18,6 @@ export default function ReloanDashboardPage() {
   const navigate = useNavigate();
   const [allLoans, setAllLoans] = useState<Loan[]>([]);
   const [eligibleLoans, setEligibleLoans] = useState<Loan[]>([]);
-  const [eligibleBorrowerCount, setEligibleBorrowerCount] = useState(0);
-  const [totalOutstanding, setTotalOutstanding] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -51,15 +49,7 @@ export default function ReloanDashboardPage() {
     );
 
     setEligibleLoans(eligible);
-    setEligibleBorrowerCount(new Set(eligible.map((l) => l.client_id)).size);
-    setTotalOutstanding(
-      eligible.reduce((sum, l) => sum + (l.remaining_balance ?? 0), 0),
-    );
   }, [allLoans]);
-
-  const avgBalance = eligibleLoans.length > 0
-    ? totalOutstanding / eligibleLoans.length
-    : 0;
 
   const filtered = eligibleLoans.filter((l) =>
     (l.client?.name ?? '').toLowerCase().includes(search.toLowerCase()),
@@ -89,53 +79,6 @@ export default function ReloanDashboardPage() {
     <div>
       <h1 className="mb-1">Reloan Management</h1>
       <p className="text-muted">Eligible Borrower Review</p>
-
-      <div className="row g-3 mb-4">
-        <div className="col-md-3">
-          <div className="ala-stat-card h-100">
-            <div className="card-body d-flex align-items-center">
-              <i className="fa-solid fa-users fa-2x me-3" />
-              <div>
-                <div className="fs-5 fw-bold">{eligibleBorrowerCount}</div>
-                <small>Eligible Borrowers</small>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="col-md-3">
-          <div className="ala-stat-card h-100">
-            <div className="card-body d-flex align-items-center">
-              <i className="fa-solid fa-peso-sign fa-2x me-3" />
-              <div>
-                <div className="fs-5 fw-bold">{formatCurrency(totalOutstanding)}</div>
-                <small>Total Outstanding</small>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="col-md-3">
-          <div className="ala-stat-card h-100">
-            <div className="card-body d-flex align-items-center">
-              <i className="fa-solid fa-file-invoice fa-2x me-3" />
-              <div>
-                <div className="fs-5 fw-bold">{eligibleLoans.length}</div>
-                <small>Eligible Loans</small>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="col-md-3">
-          <div className="ala-stat-card h-100">
-            <div className="card-body d-flex align-items-center">
-              <i className="fa-solid fa-calculator fa-2x me-3" />
-              <div>
-                <div className="fs-5 fw-bold">{formatCurrency(avgBalance)}</div>
-                <small>Avg Balance</small>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {eligibleLoans.length === 0 ? (
         <div className="text-center py-5">

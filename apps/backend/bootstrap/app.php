@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -12,6 +13,7 @@ use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 use Laravel\Sanctum\Http\Middleware\CheckForAnyAbility;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -51,6 +53,33 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (NotFoundHttpException $e, Request $request): ?JsonResponse {
             if ($request->is('api/*') || $request->expectsJson()) {
                 return response()->error('Resource not found.', 'NOT_FOUND', 404);
+            }
+
+            return null;
+        });
+
+        $exceptions->render(function (QueryException $e, Request $request): ?JsonResponse {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                if (app()->hasDebugModeEnabled()) {
+                    return response()->error($e->getMessage(), 'DATABASE_ERROR', 500);
+                }
+
+                return response()->error('A database error occurred. Please try again later.', 'DATABASE_ERROR', 500);
+            }
+
+            return null;
+        });
+
+        $exceptions->render(function (Throwable $e, Request $request): ?JsonResponse {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                $status = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
+                $status = is_int($status) && $status >= 400 && $status < 600 ? $status : 500;
+
+                if (app()->hasDebugModeEnabled()) {
+                    return response()->error($e->getMessage(), 'SERVER_ERROR', $status);
+                }
+
+                return response()->error('An unexpected error occurred.', 'SERVER_ERROR', $status);
             }
 
             return null;

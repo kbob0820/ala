@@ -33,6 +33,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     const res = await authService.login(email, password);
+    if (!res?.token || !res?.user) {
+      throw new Error('Login succeeded but the server returned an unexpected response.');
+    }
     localStorage.setItem('token', res.token);
     setUser(res.user);
   }, []);
@@ -40,6 +43,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = useCallback(
     async (name: string, email: string, password: string, passwordConfirmation: string) => {
       const res = await authService.register(name, email, password, passwordConfirmation);
+      if (!res?.token || !res?.user) {
+        throw new Error('Registration succeeded but the server returned an unexpected response.');
+      }
       localStorage.setItem('token', res.token);
       setUser(res.user);
     },

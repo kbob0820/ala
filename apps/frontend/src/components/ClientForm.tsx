@@ -96,56 +96,51 @@ export function ClientForm({
         <form onSubmit={handleSubmit} noValidate>
           <div className="row">
             <div className="col-md-4 mb-4">
-              <div className="card h-100">
-                <div className="card-header">
-                  <i className="fa-solid fa-camera me-2" />
-                  Photo
-                </div>
-                <div className="card-body text-center">
-                  <div className="mb-3">
-                    {photoPreview ? (
-                      <img
-                        src={photoPreview}
-                        alt="Preview"
-                        className="img-thumbnail rounded-circle"
-                        style={{ width: 150, height: 150, objectFit: 'cover' }}
-                      />
-                    ) : (
-                      <div
-                        className="bg-secondary bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center mx-auto"
-                        style={{ width: 150, height: 150 }}
-                      >
-                        <i className="fa-solid fa-user fa-3x text-secondary" />
-                      </div>
-                    )}
-                  </div>
-                  <input
-                    type="file"
-                    className="form-control form-control-sm"
-                    accept="image/*" capture="environment"
-                    onChange={(e) => handlePhotoChange(e.target.files?.[0] ?? null)}
-                  />
-                  {photoPreview && photo && (
-                    <button
-                      type="button"
-                      className="btn btn-outline-danger btn-sm mt-2"
-                      onClick={() => handlePhotoChange(null)}
+              <div className="ala-upload-panel h-100">
+                <div className="form-label mb-0">Photo</div>
+                <div>
+                  {photoPreview ? (
+                    <img
+                      src={photoPreview}
+                      alt="Preview"
+                      className="img-thumbnail rounded-circle"
+                      style={{ width: 150, height: 150, objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <div
+                      className="bg-secondary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center mx-auto"
+                      style={{ width: 150, height: 150 }}
                     >
-                      Remove
-                    </button>
-                  )}
-                  {fieldError('photo') && (
-                    <div className="text-danger small mt-1">{fieldError('photo')}</div>
+                      <i className="fa-solid fa-user fa-3x text-secondary" />
+                    </div>
                   )}
                 </div>
+                <input
+                  type="file"
+                  className="form-control form-control-sm"
+                  accept="image/*" capture="environment"
+                  onChange={(e) => handlePhotoChange(e.target.files?.[0] ?? null)}
+                />
+                {photoPreview && photo && (
+                  <button
+                    type="button"
+                    className="btn btn-outline-danger btn-sm"
+                    onClick={() => handlePhotoChange(null)}
+                  >
+                    Remove
+                  </button>
+                )}
+                {fieldError('photo') && (
+                  <div className="text-danger small mt-1">{fieldError('photo')}</div>
+                )}
               </div>
             </div>
 
             <div className="col-md-8">
-              <h5 className="mb-3">
-                <i className="fa-solid fa-user me-2" />
+              <div className="ala-form-section">
+                <i className="fa-solid fa-user" />
                 Personal Information
-              </h5>
+              </div>
 
               <div className="mb-3">
                 <label htmlFor="name" className="form-label">
@@ -185,12 +180,10 @@ export function ClientForm({
             </div>
           </div>
 
-          <hr className="my-4" />
-
-          <h5 className="mb-3">
-            <i className="fa-solid fa-map-location-dot me-2" />
+          <div className="ala-form-section mt-4">
+            <i className="fa-solid fa-map-location-dot" />
             Address Information
-          </h5>
+          </div>
 
           <div className="mb-3">
             <label htmlFor="address" className="form-label">
@@ -209,12 +202,10 @@ export function ClientForm({
             )}
           </div>
 
-          <hr className="my-4" />
-
-          <h5 className="mb-3">
-            <i className="fa-solid fa-briefcase me-2" />
+          <div className="ala-form-section mt-4">
+            <i className="fa-solid fa-briefcase" />
             Employment Information
-          </h5>
+          </div>
 
           <div className="row">
             <div className="col-md-6 mb-3">
@@ -251,12 +242,10 @@ export function ClientForm({
             </div>
           </div>
 
-          <hr className="my-4" />
-
-          <h5 className="mb-3">
-            <i className="fa-solid fa-share-nodes me-2" />
+          <div className="ala-form-section mt-4">
+            <i className="fa-solid fa-share-nodes" />
             Social Media &amp; Notes
-          </h5>
+          </div>
 
           <div className="mb-3">
             <label htmlFor="social_media" className="form-label">

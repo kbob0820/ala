@@ -85,6 +85,22 @@ strong, .fw-bold, .fw-semibold {
 .card:hover {
   box-shadow: var(--ala-shadow-md);
 }
+.card-header {
+  background-color: var(--ala-gray-50);
+  border-bottom: 1px solid var(--ala-gray-200);
+  padding: var(--ala-space-3) var(--ala-space-5);
+  font-size: var(--ala-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ala-gray-600);
+}
+.card-header i {
+  color: var(--ala-blue-700);
+}
+.card-body {
+  padding: var(--ala-space-5);
+}
 
 .btn {
   font-weight: 500;
@@ -153,24 +169,93 @@ strong, .fw-bold, .fw-semibold {
   border: 1px solid var(--ala-gray-300);
   border-radius: var(--ala-radius-md);
   padding: var(--ala-space-2) var(--ala-space-3);
-  transition: border-color var(--ala-transition-fast), box-shadow var(--ala-transition-fast);
+  min-height: 38px;
+  transition: border-color var(--ala-transition-fast), box-shadow var(--ala-transition-fast), background-color var(--ala-transition-fast);
   background-color: var(--ala-white);
   color: var(--ala-gray-800);
+}
+.form-control::placeholder {
+  color: var(--ala-gray-400);
+  opacity: 1;
 }
 .form-control:focus, .form-select:focus {
   border-color: var(--ala-blue-700);
   box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.15);
 }
+.form-control:disabled,
+.form-select:disabled {
+  background-color: var(--ala-gray-100);
+  border-color: var(--ala-gray-300);
+  color: var(--ala-gray-600);
+  opacity: 1;
+}
+.form-control-sm, .form-select-sm {
+  min-height: 30px;
+  padding: var(--ala-space-1) var(--ala-space-3);
+  font-size: var(--ala-text-xs);
+}
+
 .form-label {
-  font-size: var(--ala-text-sm);
+  font-size: var(--ala-text-xs);
   font-weight: 500;
+  letter-spacing: 0.01em;
   color: var(--ala-gray-700);
   margin-bottom: var(--ala-space-1);
+}
+
+.form-text {
+  font-size: var(--ala-text-xs);
+  color: var(--ala-gray-600);
+  margin-top: var(--ala-space-1);
+}
+
+.input-group-text {
+  font-size: var(--ala-text-sm);
+  color: var(--ala-gray-600);
+  background-color: var(--ala-gray-100);
+  border: 1px solid var(--ala-gray-300);
+  border-radius: var(--ala-radius-md);
 }
 
 .form-check-input:checked {
   background-color: var(--ala-blue-700);
   border-color: var(--ala-blue-700);
+}
+
+/* Segmented controls (btn-check + btn-group) */
+.btn-group > .btn-check:checked + .btn-outline-primary {
+  background-color: var(--ala-blue-700);
+  border-color: var(--ala-blue-700);
+  color: var(--ala-white);
+}
+.btn-group > .btn-check:focus-visible + .btn-outline-primary {
+  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.15);
+}
+.btn-group > .btn-outline-primary {
+  color: var(--ala-blue-700);
+  border-color: var(--ala-gray-300);
+  background-color: var(--ala-white);
+}
+.btn-group > .btn-outline-primary:hover {
+  background-color: var(--ala-blue-50);
+  border-color: var(--ala-blue-700);
+  color: var(--ala-blue-700);
+}
+
+/* Invalid states */
+.form-control.is-invalid,
+.form-select.is-invalid {
+  border-color: var(--ala-danger-600);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+.form-control.is-invalid:focus,
+.form-select.is-invalid:focus {
+  border-color: var(--ala-danger-600);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+.invalid-feedback {
+  font-size: var(--ala-text-xs);
+  color: var(--ala-danger-600);
 }
 
 .badge {
@@ -347,6 +432,38 @@ hr {
   border: 1px solid var(--ala-gray-300);
   border-radius: var(--ala-radius-lg);
   overflow: hidden;
+}
+
+.ala-form-section {
+  display: flex;
+  align-items: center;
+  gap: var(--ala-space-2);
+  font-size: var(--ala-text-sm);
+  font-weight: 600;
+  color: var(--ala-gray-900);
+  margin-bottom: var(--ala-space-4);
+}
+.ala-form-section i {
+  color: var(--ala-blue-700);
+}
+.ala-form-section::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background-color: var(--ala-gray-200);
+  margin-left: var(--ala-space-2);
+}
+
+.ala-upload-panel {
+  border: 1px dashed var(--ala-gray-300);
+  border-radius: var(--ala-radius-md);
+  background-color: var(--ala-gray-50);
+  padding: var(--ala-space-5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ala-space-3);
+  text-align: center;
 }
 
 .ala-tabs {

@@ -95,7 +95,7 @@ describe('LoanForm', () => {
 
   it('renders actual release amount', () => {
     renderLoanForm();
-    expect(screen.getByText('Actual Release:')).toBeInTheDocument();
+    expect(screen.getByText('Actual Release')).toBeInTheDocument();
   });
 
   it('renders submit button with custom label', () => {
